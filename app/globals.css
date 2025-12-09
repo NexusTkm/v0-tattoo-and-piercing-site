@@ -1,0 +1,141 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Paleta elegante: Negro, Arena y detalles minimalistas */
+  --background: #faf8f3;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #1a1a1a;
+  --primary-foreground: #faf8f3;
+  --secondary: #2d2d2d;
+  --secondary-foreground: #faf8f3;
+  --muted: #9a9a9a;
+  --muted-foreground: #7a7a7a;
+  --accent: #c9a961;
+  --accent-foreground: #1a1a1a;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.95 0 0);
+  --border: #e5e0da;
+  --input: #fefcf8;
+  --ring: #1a1a1a;
+  --chart-1: #1a1a1a;
+  --chart-2: #2d2d2d;
+  --chart-3: #5a5a5a;
+  --chart-4: #8b8b8b;
+  --chart-5: #b8b8b8;
+  --radius: 1.5rem;
+  --sidebar: #faf8f3;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #1a1a1a;
+  --sidebar-primary-foreground: #faf8f3;
+  --sidebar-accent: #c9a961;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #e5e0da;
+  --sidebar-ring: #1a1a1a;
+}
+
+.dark {
+  --background: #0f0f0f;
+  --foreground: #faf8f3;
+  --card: #1a1a1a;
+  --card-foreground: #faf8f3;
+  --popover: #1a1a1a;
+  --popover-foreground: #faf8f3;
+  --primary: #faf8f3;
+  --primary-foreground: #0f0f0f;
+  --secondary: #2d2d2d;
+  --secondary-foreground: #faf8f3;
+  --muted: #8b8b8b;
+  --muted-foreground: #a0a0a0;
+  --accent: #c9a961;
+  --accent-foreground: #1a1a1a;
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: #2d2d2d;
+  --input: #1a1a1a;
+  --ring: #c9a961;
+  --chart-1: #c9a961;
+  --chart-2: #faf8f3;
+  --chart-3: #8b8b8b;
+  --chart-4: #5a5a5a;
+  --chart-5: #2d2d2d;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #faf8f3;
+  --sidebar-primary: #c9a961;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #2d2d2d;
+  --sidebar-accent-foreground: #faf8f3;
+  --sidebar-border: #2d2d2d;
+  --sidebar-ring: #c9a961;
+}
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Estilos personalizados para botones más redondeados y elegantes */
+@layer components {
+  .btn-primary {
+    @apply px-8 py-4 rounded-full bg-primary text-primary-foreground font-semibold transition duration-300 hover:bg-secondary hover:shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply px-8 py-4 rounded-full border-2 border-primary text-primary font-semibold transition duration-300 hover:bg-primary/5;
+  }
+
+  .btn-accent {
+    @apply px-8 py-4 rounded-full bg-accent text-accent-foreground font-semibold transition duration-300 hover:shadow-lg hover:scale-105;
+  }
+}
