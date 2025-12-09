@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ChevronLeft, ShoppingCart, Search, X, Plus, Minus } from "lucide-react"
+import { ChevronLeft, ShoppingCart, Search, X, Plus, Minus, Loader } from "lucide-react"
 
 interface CartItem {
   id: string
@@ -29,6 +29,15 @@ export default function Tienda() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [selectedCategory, setSelectedCategory] = useState("todas")
   const [searchTerm, setSearchTerm] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [showCheckout, setShowCheckout] = useState(false)
+  const [checkoutData, setCheckoutData] = useState({
+    nombre: "",
+    email: "",
+    telefono: "",
+    notas: "",
+  })
 
   const productos: Producto[] = [
     // Tintas
@@ -239,9 +248,18 @@ export default function Tienda() {
   const cartCount = cart.reduce((sum, item) => sum + item.cantidad, 0)
 
   const handleCheckout = () => {
-    alert(
-      `Carrito total: $${cartTotal.toFixed(2)}\n\nSistema de pago integrado. En una aplicación real, esto redireccionaría a Stripe o similar.`,
-    )
+    setShowCheckout(true)
+  }
+
+  const handleCheckoutSubmit = () => {
+    setIsLoading(true)
+    // Simulate a checkout process
+    setTimeout(() => {
+      setIsLoading(false)
+      setMessage({ type: "success", text: "Compra realizada con éxito" })
+      setCart([])
+      setShowCheckout(false)
+    }, 2000)
   }
 
   return (
@@ -303,7 +321,7 @@ export default function Tienda() {
                           onClick={() => updateQuantity(item.id, item.cantidad + 1)}
                           className="p-1 hover:bg-border rounded"
                         >
-                          <Plus size={16} className="text-foreground" />
+                          <Plus size={16} />
                         </button>
                         <button
                           onClick={() => removeFromCart(item.id)}
@@ -329,6 +347,84 @@ export default function Tienda() {
                   </Button>
                 </div>
               </>
+            )}
+          </Card>
+        )}
+
+        {/* Checkout */}
+        {showCheckout && (
+          <Card className="bg-card border-border p-6 mb-8 sticky top-24 z-40">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-foreground">Checkout</h2>
+              <button onClick={() => setShowCheckout(false)} className="text-muted-foreground hover:text-foreground">
+                <X size={24} />
+              </button>
+            </div>
+
+            <form className="space-y-4">
+              <div>
+                <label htmlFor="nombre" className="text-sm font-semibold text-foreground">
+                  Nombre
+                </label>
+                <input
+                  type="text"
+                  id="nombre"
+                  value={checkoutData.nombre}
+                  onChange={(e) => setCheckoutData({ ...checkoutData, nombre: e.target.value })}
+                  className="w-full pl-4 pr-4 py-3 rounded-lg bg-secondary border border-border text-foreground focus:border-accent outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="email" className="text-sm font-semibold text-foreground">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={checkoutData.email}
+                  onChange={(e) => setCheckoutData({ ...checkoutData, email: e.target.value })}
+                  className="w-full pl-4 pr-4 py-3 rounded-lg bg-secondary border border-border text-foreground focus:border-accent outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="telefono" className="text-sm font-semibold text-foreground">
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  value={checkoutData.telefono}
+                  onChange={(e) => setCheckoutData({ ...checkoutData, telefono: e.target.value })}
+                  className="w-full pl-4 pr-4 py-3 rounded-lg bg-secondary border border-border text-foreground focus:border-accent outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="notas" className="text-sm font-semibold text-foreground">
+                  Notas
+                </label>
+                <textarea
+                  id="notas"
+                  value={checkoutData.notas}
+                  onChange={(e) => setCheckoutData({ ...checkoutData, notas: e.target.value })}
+                  className="w-full pl-4 pr-4 py-3 rounded-lg bg-secondary border border-border text-foreground focus:border-accent outline-none"
+                />
+              </div>
+
+              <Button
+                onClick={handleCheckoutSubmit}
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 py-3 font-semibold"
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader size={24} /> : "Finalizar Compra"}
+              </Button>
+            </form>
+
+            {message && (
+              <div
+                className={`mt-4 p-4 rounded-lg ${message.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+              >
+                {message.text}
+              </div>
             )}
           </Card>
         )}

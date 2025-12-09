@@ -6,7 +6,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ChevronLeft, Calendar, Clock, User, Mail, Phone } from "lucide-react"
+import { ChevronLeft, Calendar, Clock, User, Mail, Phone, Loader } from "lucide-react"
 
 interface TimeSlot {
   time: string
@@ -18,6 +18,8 @@ export default function ReservarCita() {
   const [selectedService, setSelectedService] = useState("")
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedTime, setSelectedTime] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -75,17 +77,60 @@ export default function ReservarCita() {
     { time: "18:00", available: true },
   ]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log({
-      service: selectedService,
-      date: selectedDate,
-      time: selectedTime,
-      ...formData,
-    })
-    alert("Cita reservada exitosamente. Te contactaremos pronto para confirmar.")
-    setStep(1)
-    setSelectedService("")
+    setIsLoading(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          serviceId: selectedService,
+          serviceName: services.find((s) => s.id === selectedService)?.name,
+          fecha: selectedDate,
+          hora: selectedTime,
+          nombre: formData.nombre,
+          email: formData.email,
+          telefono: formData.telefono,
+          descripcion: formData.descripcion,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al reservar la cita")
+      }
+
+      setMessage({
+        type: "success",
+        text: "Cita reservada exitosamente. Te contactaremos pronto para confirmar.",
+      })
+
+      setTimeout(() => {
+        setStep(1)
+        setSelectedService("")
+        setSelectedDate("")
+        setSelectedTime("")
+        setFormData({
+          nombre: "",
+          email: "",
+          telefono: "",
+          descripcion: "",
+        })
+      }, 2000)
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Error al reservar la cita",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const getNextDates = () => {
@@ -112,6 +157,18 @@ export default function ReservarCita() {
           <h1 className="text-4xl font-bold text-foreground">Reservar Cita</h1>
           <p className="text-muted-foreground mt-2">Selecciona el servicio, fecha y hora que desees</p>
         </div>
+
+        {message && (
+          <div
+            className={`mb-6 p-4 rounded-lg ${
+              message.type === "success"
+                ? "bg-green-100 text-green-800 border border-green-300"
+                : "bg-red-100 text-red-800 border border-red-300"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
 
         {/* Pasos */}
         <div className="flex items-center justify-center gap-4 mb-12">
@@ -242,7 +299,11 @@ export default function ReservarCita() {
         {step === 3 && (
           <Card className="bg-card border-border p-8">
             <div className="flex items-center gap-4 mb-6">
-              <button onClick={() => setStep(2)} className="p-2 hover:bg-secondary rounded-lg transition">
+              <button
+                onClick={() => setStep(2)}
+                disabled={isLoading}
+                className="p-2 hover:bg-secondary rounded-lg transition disabled:opacity-50"
+              >
                 <ChevronLeft size={20} className="text-foreground" />
               </button>
               <h2 className="text-2xl font-bold text-foreground">Información de Contacto</h2>
@@ -327,9 +388,17 @@ export default function ReservarCita() {
 
               <Button
                 type="submit"
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 py-3 text-base font-semibold"
+                disabled={isLoading}
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 py-3 text-base font-semibold disabled:opacity-50"
               >
-                Confirmar Reserva
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader size={20} className="animate-spin" />
+                    Procesando...
+                  </div>
+                ) : (
+                  "Confirmar Reserva"
+                )}
               </Button>
             </form>
           </Card>

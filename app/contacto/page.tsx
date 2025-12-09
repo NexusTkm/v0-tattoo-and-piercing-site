@@ -6,7 +6,19 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ChevronLeft, MapPin, Phone, Mail, Clock, Instagram, Facebook, Send, MessageCircle } from "lucide-react"
+import {
+  ChevronLeft,
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Instagram,
+  Facebook,
+  Send,
+  MessageCircle,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react"
 
 export default function Contacto() {
   const [formData, setFormData] = useState({
@@ -18,24 +30,77 @@ export default function Contacto() {
   })
 
   const [enviado, setEnviado] = useState(false)
+  const [errores, setErrores] = useState<Record<string, string>>({})
+  const [cargando, setCargando] = useState(false)
+
+  const validarFormulario = () => {
+    const nuevosErrores: Record<string, string> = {}
+
+    if (!formData.nombre.trim()) {
+      nuevosErrores.nombre = "El nombre es requerido"
+    } else if (formData.nombre.length < 3) {
+      nuevosErrores.nombre = "El nombre debe tener al menos 3 caracteres"
+    }
+
+    if (!formData.email.trim()) {
+      nuevosErrores.email = "El email es requerido"
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      nuevosErrores.email = "Por favor ingresa un email válido"
+    }
+
+    if (formData.telefono && !/^\+?[0-9\s\-()]{6,}$/.test(formData.telefono)) {
+      nuevosErrores.telefono = "Por favor ingresa un teléfono válido"
+    }
+
+    if (!formData.asunto) {
+      nuevosErrores.asunto = "Por favor selecciona un asunto"
+    }
+
+    if (!formData.mensaje.trim()) {
+      nuevosErrores.mensaje = "El mensaje es requerido"
+    } else if (formData.mensaje.length < 10) {
+      nuevosErrores.mensaje = "El mensaje debe tener al menos 10 caracteres"
+    }
+
+    setErrores(nuevosErrores)
+    return Object.keys(nuevosErrores).length === 0
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    if (errores[name]) {
+      setErrores((prev) => {
+        const nuevos = { ...prev }
+        delete nuevos[name]
+        return nuevos
+      })
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Mensaje enviado:", formData)
-    setEnviado(true)
-    setFormData({
-      nombre: "",
-      email: "",
-      telefono: "",
-      asunto: "",
-      mensaje: "",
-    })
-    setTimeout(() => setEnviado(false), 3000)
+
+    if (!validarFormulario()) {
+      return
+    }
+
+    setCargando(true)
+
+    setTimeout(() => {
+      console.log("Mensaje enviado:", formData)
+      setEnviado(true)
+      setFormData({
+        nombre: "",
+        email: "",
+        telefono: "",
+        asunto: "",
+        mensaje: "",
+      })
+      setCargando(false)
+
+      setTimeout(() => setEnviado(false), 5000)
+    }, 1000)
   }
 
   return (
@@ -43,7 +108,7 @@ export default function Contacto() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-12">
-          <Link href="/" className="inline-flex items-center gap-2 text-accent hover:text-accent/80 mb-6">
+          <Link href="/" className="inline-flex items-center gap-2 text-accent hover:text-accent/80 mb-6 transition">
             <ChevronLeft size={20} />
             Volver al inicio
           </Link>
@@ -186,97 +251,164 @@ export default function Contacto() {
               </div>
             </Card>
 
-            {/* Formulario */}
+            {/* Formulario Mejorado */}
             <Card className="bg-card border-border p-8">
               <h2 className="text-2xl font-bold text-foreground mb-6">Envíanos un Mensaje</h2>
 
               {enviado ? (
                 <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Send className="text-accent" size={32} />
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="text-green-600" size={40} />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">¡Mensaje Enviado!</h3>
-                  <p className="text-muted-foreground">
-                    Gracias por tu mensaje. Nos pondremos en contacto lo antes posible.
+                  <h3 className="text-2xl font-bold text-foreground mb-3">¡Mensaje Enviado Exitosamente!</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Gracias por tu mensaje. Nuestro equipo de Black Ink Tattoo se pondrá en contacto contigo lo antes
+                    posible, generalmente dentro de 24 horas.
                   </p>
+                  <Button
+                    onClick={() => setEnviado(false)}
+                    className="mt-6 rounded-full bg-accent text-accent-foreground hover:bg-accent/90"
+                  >
+                    Enviar otro mensaje
+                  </Button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-foreground mb-2">Nombre</label>
-                      <input
-                        type="text"
-                        name="nombre"
-                        required
-                        value={formData.nombre}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 rounded-lg bg-secondary border border-border text-foreground focus:border-accent outline-none transition"
-                        placeholder="Tu nombre"
-                      />
-                    </div>
+                  {/* Nombre */}
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-2">Nombre completo</label>
+                    <input
+                      type="text"
+                      name="nombre"
+                      value={formData.nombre}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 rounded-2xl bg-secondary/20 border-2 transition focus:outline-none ${
+                        errores.nombre ? "border-red-500 focus:border-red-500" : "border-border focus:border-accent"
+                      } text-foreground placeholder:text-muted-foreground`}
+                      placeholder="Tu nombre completo"
+                    />
+                    {errores.nombre && (
+                      <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+                        <AlertCircle size={16} />
+                        {errores.nombre}
+                      </div>
+                    )}
+                  </div>
 
+                  {/* Email y Teléfono */}
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-foreground mb-2">Email</label>
                       <input
                         type="email"
                         name="email"
-                        required
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full px-4 py-2 rounded-lg bg-secondary border border-border text-foreground focus:border-accent outline-none transition"
+                        className={`w-full px-4 py-3 rounded-2xl bg-secondary/20 border-2 transition focus:outline-none ${
+                          errores.email ? "border-red-500 focus:border-red-500" : "border-border focus:border-accent"
+                        } text-foreground placeholder:text-muted-foreground`}
                         placeholder="tu@email.com"
                       />
+                      {errores.email && (
+                        <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+                          <AlertCircle size={16} />
+                          {errores.email}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">Teléfono</label>
+                      <input
+                        type="tel"
+                        name="telefono"
+                        value={formData.telefono}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-3 rounded-2xl bg-secondary/20 border-2 transition focus:outline-none ${
+                          errores.telefono ? "border-red-500 focus:border-red-500" : "border-border focus:border-accent"
+                        } text-foreground placeholder:text-muted-foreground`}
+                        placeholder="+34 123 456 789"
+                      />
+                      {errores.telefono && (
+                        <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+                          <AlertCircle size={16} />
+                          {errores.telefono}
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-foreground mb-2">Teléfono (opcional)</label>
-                    <input
-                      type="tel"
-                      name="telefono"
-                      value={formData.telefono}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 rounded-lg bg-secondary border border-border text-foreground focus:border-accent outline-none transition"
-                      placeholder="+34 123 456 789"
-                    />
-                  </div>
-
+                  {/* Asunto */}
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-2">Asunto</label>
                     <select
                       name="asunto"
                       value={formData.asunto}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 rounded-lg bg-secondary border border-border text-foreground focus:border-accent outline-none transition"
+                      className={`w-full px-4 py-3 rounded-2xl bg-secondary/20 border-2 transition focus:outline-none ${
+                        errores.asunto ? "border-red-500 focus:border-red-500" : "border-border focus:border-accent"
+                      } text-foreground`}
                     >
                       <option value="">Selecciona un asunto</option>
                       <option value="consulta">Consulta general</option>
                       <option value="reserva">Problema con reserva</option>
                       <option value="producto">Pregunta sobre productos</option>
+                      <option value="diseno">Idea de diseño</option>
                       <option value="otro">Otro</option>
                     </select>
+                    {errores.asunto && (
+                      <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+                        <AlertCircle size={16} />
+                        {errores.asunto}
+                      </div>
+                    )}
                   </div>
 
+                  {/* Mensaje */}
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-2">Mensaje</label>
+                    <label className="block text-sm font-semibold text-foreground mb-2">
+                      Mensaje <span className="text-muted-foreground text-xs">({formData.mensaje.length}/500)</span>
+                    </label>
                     <textarea
                       name="mensaje"
-                      required
                       value={formData.mensaje}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 rounded-lg bg-secondary border border-border text-foreground focus:border-accent outline-none transition"
-                      placeholder="Tu mensaje..."
+                      className={`w-full px-4 py-3 rounded-2xl bg-secondary/20 border-2 transition focus:outline-none resize-none ${
+                        errores.mensaje ? "border-red-500 focus:border-red-500" : "border-border focus:border-accent"
+                      } text-foreground placeholder:text-muted-foreground`}
+                      placeholder="Cuéntanos detalles sobre tu solicitud..."
                       rows={6}
+                      maxLength={500}
                     />
+                    {errores.mensaje && (
+                      <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+                        <AlertCircle size={16} />
+                        {errores.mensaje}
+                      </div>
+                    )}
                   </div>
 
+                  {/* Botón Enviar */}
                   <Button
                     type="submit"
-                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90 py-3 text-base font-semibold flex items-center justify-center gap-2"
+                    disabled={cargando}
+                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-muted disabled:cursor-not-allowed py-3 text-base font-semibold flex items-center justify-center gap-2 rounded-full transition"
                   >
-                    <Send size={20} /> Enviar Mensaje
+                    {cargando ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-accent-foreground border-t-transparent rounded-full animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={20} /> Enviar Mensaje
+                      </>
+                    )}
                   </Button>
+
+                  <p className="text-xs text-muted-foreground text-center">
+                    Responderemos a tu mensaje dentro de 24 horas hábiles
+                  </p>
                 </form>
               )}
             </Card>
